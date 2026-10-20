@@ -1,0 +1,6 @@
+# same TensorFlow version the model was trained with in Colab
+tensorflow==2.21.0
+streamlit
+google-genai
+pillow
+numpy
