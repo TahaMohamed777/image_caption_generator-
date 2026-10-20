@@ -403,6 +403,23 @@ html { font-size: var(--font-size); }
     padding: 1.6rem;
 }
 [data-testid="stFileUploaderDropzone"] * { color: var(--text) !important; }
+/* nothing inside the upload box gets Streamlit's white background */
+[data-testid="stFileUploaderDropzone"] div,
+[data-testid="stFileUploaderDropzone"] small { background-color: transparent !important; }
+/* the chosen file: a blue box with the file name in white (yellow + black in high contrast) */
+[data-testid="stFileUploaderFile"] {
+    background: var(--button-bg) !important;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+}
+[data-testid="stFileUploaderFile"] * { color: var(--button-text) !important; }
+/* the "Browse files" and "+" buttons */
+[data-testid="stFileUploaderDropzone"] button {
+    background: var(--button-bg) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 12px;
+}
+[data-testid="stFileUploaderDropzone"] button * { color: var(--button-text) !important; fill: var(--button-text) !important; }
 
 /* header banner */
 .hero {
