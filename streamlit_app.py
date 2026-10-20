@@ -236,19 +236,14 @@ THEMES = {
         "muted": "#1E3A8A",
         "accent": "#1D4ED8",
         "border": "#93C5FD",
-        "sidebar": "rgba(239, 246, 255, 0.88)",
+        "sidebar": "rgba(11, 30, 91, 0.92)",
+        "side_text": "#FFFFFF",
+        "side_muted": "#BFDBFE",
         "overlay": "rgba(255, 255, 255, 0.55)",
         "hero_bg": "linear-gradient(135deg, #0B1E5B 0%, #1D4ED8 55%, #60A5FA 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #0B1E5B 0%, #1D4ED8 60%, #3B82F6 100%)",
         "button_text": "#FFFFFF",
-        # sidebar controls (display buttons, voice dropdown)
-        "control_bg": "linear-gradient(135deg, #1E3A8A, #2563EB)",
-        "control_active_bg": "linear-gradient(135deg, #1D4ED8, #60A5FA)",
-        "control_text": "#FFFFFF",
-        "control_active_text": "#FFFFFF",
-        "control_border": "#1E40AF",
-        "control_ring": "#0B1E5B",
     },
     "🌙 Dark": {
         "bg": "radial-gradient(circle at top left, #1E3A8A 0%, #0F172A 50%, #020617 100%)",
@@ -257,18 +252,14 @@ THEMES = {
         "muted": "#BFDBFE",
         "accent": "#60A5FA",
         "border": "#1E3A8A",
-        "sidebar": "rgba(8, 15, 40, 0.9)",
+        "sidebar": "rgba(11, 30, 91, 0.88)",
+        "side_text": "#FFFFFF",
+        "side_muted": "#BFDBFE",
         "overlay": "rgba(2, 6, 23, 0.40)",
         "hero_bg": "linear-gradient(135deg, #0A1747 0%, #1E40AF 55%, #3B82F6 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #0A1747 0%, #1D4ED8 60%, #3B82F6 100%)",
         "button_text": "#FFFFFF",
-        "control_bg": "linear-gradient(135deg, #0B1E5B, #1E40AF)",
-        "control_active_bg": "linear-gradient(135deg, #1D4ED8, #60A5FA)",
-        "control_text": "#DBEAFE",
-        "control_active_text": "#FFFFFF",
-        "control_border": "#1E3A8A",
-        "control_ring": "#93C5FD",
     },
     "⚫ High contrast": {
         "bg": "#000000",
@@ -278,17 +269,13 @@ THEMES = {
         "accent": "#FFFF00",
         "border": "#FFFF00",
         "sidebar": "#000000",
+        "side_text": "#FFFFFF",
+        "side_muted": "#FFFF00",
         "overlay": "#000000",
         "hero_bg": "#000000",
         "hero_text": "#FFFF00",
         "button_bg": "#FFFF00",
         "button_text": "#000000",
-        "control_bg": "#000000",
-        "control_active_bg": "#FFFF00",
-        "control_text": "#FFFF00",
-        "control_active_text": "#000000",
-        "control_border": "#FFFF00",
-        "control_ring": "#FFFFFF",
     },
 }
 FONT_SIZES = {"Normal": "18px", "Large": "21px", "Extra large": "25px"}
@@ -366,7 +353,7 @@ html { font-size: var(--font-size); }
     margin: 1.3rem 0 0.5rem;
     padding-bottom: 0.35rem;
     border-bottom: 2px solid var(--border);
-    color: var(--muted);
+    color: var(--side-muted);
     font-size: 0.85rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -374,38 +361,9 @@ html { font-size: var(--font-size); }
 }
 
 
-/* sidebar: display buttons in blue, the chosen one is lighter with a ring */
-[data-testid="stSidebar"] [data-testid^="stBaseButton-segmented_control"] {
-    flex: 1 1 0;
-    min-width: 0;
-    background: var(--control-bg) !important;
-    border: 2px solid var(--control-border) !important;
-    padding: 0.45rem 0.3rem;
-}
-[data-testid="stSidebar"] [data-testid^="stBaseButton-segmented_control"] * {
-    color: var(--control-text) !important;
-    font-weight: 700;
-    font-size: 0.85rem;
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-segmented_controlActive"] {
-    background: var(--control-active-bg) !important;
-    box-shadow: 0 0 0 2px var(--control-ring);
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-segmented_controlActive"] * {
-    color: var(--control-active-text) !important;
-}
-
-/* sidebar: voice dropdown in blue */
-[data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: var(--control-bg) !important;
-    border: 2px solid var(--control-border) !important;
-    border-radius: 12px;
-}
-[data-testid="stSidebar"] [data-baseweb="select"] * { color: var(--control-text) !important; }
-[data-testid="stSidebar"] [data-baseweb="select"] svg { fill: var(--control-text) !important; }
-/* the dropdown has its own outline, so no extra yellow focus line inside it */
-[data-testid="stSidebar"] [data-baseweb="select"] *:focus-visible { outline: none !important; }
-[data-testid="stSidebar"] [data-baseweb="select"]:focus-within > div { box-shadow: 0 0 0 3px #FACC15; }
+/* sidebar text is always light, because the sidebar is always navy (black in high contrast) */
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div { color: var(--side-text); }
 
 /* sidebar: footer */
 .side-footer {
@@ -413,7 +371,7 @@ html { font-size: var(--font-size); }
     padding-top: 1rem;
     border-top: 2px solid var(--border);
     text-align: center;
-    color: var(--muted);
+    color: var(--side-muted);
     font-size: 0.8rem;
 }
 .side-footer .gemini-badge { margin-bottom: 0.6rem; }

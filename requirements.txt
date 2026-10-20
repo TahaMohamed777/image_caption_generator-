@@ -1,6 +1,6 @@
 # same TensorFlow version the model was trained with in Colab
 tensorflow==2.21.0
-streamlit>=1.40
+streamlit>=1.46
 google-genai
 pillow
 numpy
