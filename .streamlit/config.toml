@@ -4,3 +4,7 @@
 base = "light"
 primaryColor = "#7C3AED"
 font = "sans serif"
+
+[server]
+# lets the app use files from the "static" folder (the background image)
+enableStaticServing = true

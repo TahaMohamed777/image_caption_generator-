@@ -1,4 +1,5 @@
 import io
+import os
 import html
 import wave
 import pickle
@@ -156,6 +157,14 @@ with st.sidebar:
         help="Describes the photo and reads it aloud as soon as a photo is added, no buttons needed.",
     )
 
+    st.divider()
+    show_bg_image = st.toggle(
+        "Background image",
+        value=True,
+        help="Turn this off if the background makes the text hard to read. "
+             "It is always off in High contrast mode.",
+    )
+
 
 # ---------- colors for each display mode ----------
 
@@ -168,6 +177,7 @@ THEMES = {
         "accent": "#6D28D9",
         "border": "#C4B5FD",
         "sidebar": "rgba(255, 255, 255, 0.85)",
+        "overlay": "rgba(255, 255, 255, 0.70)",
         "hero_bg": "linear-gradient(135deg, #7C3AED 0%, #DB2777 55%, #EA580C 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #6D28D9, #BE185D)",
@@ -181,6 +191,7 @@ THEMES = {
         "accent": "#C4B5FD",
         "border": "#475569",
         "sidebar": "rgba(15, 23, 42, 0.9)",
+        "overlay": "rgba(2, 6, 23, 0.60)",
         "hero_bg": "linear-gradient(135deg, #6D28D9 0%, #BE185D 55%, #C2410C 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #7C3AED, #DB2777)",
@@ -194,6 +205,7 @@ THEMES = {
         "accent": "#FFFF00",
         "border": "#FFFF00",
         "sidebar": "#000000",
+        "overlay": "#000000",
         "hero_bg": "#000000",
         "hero_text": "#FFFF00",
         "button_bg": "#FFFF00",
@@ -210,6 +222,19 @@ st.markdown(
     f"<style>:root {{ {css_variables} --font-size: {FONT_SIZES[text_size]}; }}</style>",
     unsafe_allow_html=True,
 )
+
+# background image: the file is in the "static" folder, Streamlit serves it at app/static/...
+# a see-through color layer on top keeps the text readable
+BACKGROUND_IMAGE = "static/background.jpg"
+if show_bg_image and theme_name != "⚫ High contrast" and os.path.exists(BACKGROUND_IMAGE):
+    st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(var(--overlay), var(--overlay)),
+                url("app/static/background.jpg") center / cover fixed !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
