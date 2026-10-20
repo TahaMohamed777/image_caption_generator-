@@ -1,4 +1,5 @@
 import io
+import html
 import wave
 import pickle
 import numpy as np
@@ -13,6 +14,9 @@ from google.genai import types
 TEXT_MODEL = "gemini-3.8-flash"
 TTS_MODEL = "gemini-3.8-flash-tts"
 VOICE = "Kore"
+
+# this has to be the first Streamlit command
+st.set_page_config(page_title="Image Caption Generator", page_icon="🖼️", layout="wide")
 
 
 # ---------- load everything once (cached, so it doesn't reload on every click) ----------
@@ -126,29 +130,97 @@ def text_to_speech(text):
 
 # ---------- the web page ----------
 
-st.title("Image Caption Generator")
-st.write(
-    "A CNN (VGG16) + LSTM model trained on Flickr8k describes the photo, "
-    "then Gemini reads the description out loud for blind and visually impaired users."
-)
+st.markdown("""
+<style>
+.hero {
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 55%, #F59E0B 100%);
+    padding: 2.2rem 2rem;
+    border-radius: 18px;
+    margin-bottom: 1.5rem;
+}
+.hero h1 { color: white; margin: 0; font-size: 2.5rem; }
+.hero p { color: rgba(255, 255, 255, 0.92); margin: 0.6rem 0 0; font-size: 1.1rem; }
 
+.step {
+    background: #1E293B;
+    border-radius: 14px;
+    padding: 1.2rem;
+    text-align: center;
+    border-top: 5px solid;
+    height: 100%;
+}
+.step .icon { font-size: 2.2rem; }
+.step h4 { margin: 0.4rem 0 0.3rem; }
+.step p { opacity: 0.8; margin: 0; font-size: 0.95rem; }
+
+.card {
+    background: #1E293B;
+    border-radius: 14px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1rem;
+    border-left: 6px solid;
+}
+.card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; }
+.card .text { font-size: 1.35rem; font-weight: 600; margin-top: 0.3rem; }
+</style>
+""", unsafe_allow_html=True)
+
+
+def step(icon, title, text, color):
+    st.markdown(
+        f'<div class="step" style="border-color:{color}"><div class="icon">{icon}</div>'
+        f'<h4>{title}</h4><p>{text}</p></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def card(label, text, color):
+    # html.escape so the caption text is shown as text, not read as HTML
+    st.markdown(
+        f'<div class="card" style="border-color:{color}"><div class="label">{label}</div>'
+        f'<div class="text">{html.escape(text)}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+st.markdown("""
+<div class="hero">
+    <h1>🖼️ Image Caption Generator</h1>
+    <p>Upload a photo and hear what's in it. Made to help blind and visually impaired people.</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    step("🧠", "1. CNN (VGG16)", "Looks at the photo and extracts 4096 image features", "#8B5CF6")
+with col2:
+    step("📝", "2. LSTM", "Writes a caption word by word, trained on Flickr8k", "#EC4899")
+with col3:
+    step("🔊", "3. Gemini", "Turns it into a natural sentence and reads it aloud", "#F59E0B")
+
+st.write("")
 uploaded = st.file_uploader("Upload a photo", type=["jpg", "jpeg", "png"])
 
 if uploaded is not None:
     image = Image.open(uploaded)
-    st.image(image)
+    left, right = st.columns(2, gap="large")
 
-    with st.spinner("Generating caption..."):
-        caption = predict_caption(extract_features(image))
-    st.subheader("Caption from my model")
-    st.write(caption)
+    with left:
+        st.image(image)
 
-    with st.spinner("Asking Gemini to describe it..."):
-        sentence = improve_caption(caption)
-    st.subheader("Spoken sentence")
-    st.write(sentence)
+    with right:
+        with st.spinner("Generating caption..."):
+            caption = predict_caption(extract_features(image))
+        card("Caption from my model", caption, "#8B5CF6")
 
-    with st.spinner("Creating the audio..."):
-        audio = text_to_speech(sentence)
-    if audio:
-        st.audio(audio, format="audio/wav", autoplay=True)
+        with st.spinner("Asking Gemini to describe it..."):
+            sentence = improve_caption(caption)
+        card("Spoken sentence", sentence, "#EC4899")
+
+        with st.spinner("Creating the audio..."):
+            audio = text_to_speech(sentence)
+        if audio:
+            st.audio(audio, format="audio/wav", autoplay=True)
+
+st.markdown("---")
+st.caption("NTI project · CNN + LSTM image captioning with Gemini voice output")
