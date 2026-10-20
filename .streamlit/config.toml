@@ -2,7 +2,7 @@
 # the app switches between light / dark / high contrast itself (see the Settings sidebar),
 # this is only the base for Streamlit's own widgets
 base = "light"
-primaryColor = "#7C3AED"
+primaryColor = "#3B82F6"
 font = "sans serif"
 
 [server]

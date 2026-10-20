@@ -155,6 +155,8 @@ with st.sidebar:
         "Display mode",
         ["☀️ Light", "🌙 Dark", "⚫ High contrast"],
         default="🌙 Dark",
+        # shorter text on the buttons so all three fit in one row
+        format_func=lambda mode: mode.replace("High contrast", "Contrast"),
         label_visibility="collapsed",
     )
     if theme_name is None:  # clicking the selected button again un-selects it, so fall back to Dark
@@ -197,34 +199,48 @@ with st.sidebar:
 
 # ---------- colors for each display mode ----------
 
+# everything uses blues: dark navy -> light blue, like the logo card
 THEMES = {
     "☀️ Light": {
-        "bg": "linear-gradient(135deg, #EEF2FF 0%, #FDF2F8 50%, #FFF7ED 100%)",
+        "bg": "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #E0F2FE 100%)",
         "card": "#FFFFFF",
-        "text": "#111827",
-        "muted": "#374151",
-        "accent": "#6D28D9",
-        "border": "#C4B5FD",
-        "sidebar": "rgba(255, 255, 255, 0.85)",
+        "text": "#0F172A",
+        "muted": "#1E3A8A",
+        "accent": "#1D4ED8",
+        "border": "#93C5FD",
+        "sidebar": "rgba(239, 246, 255, 0.88)",
         "overlay": "rgba(255, 255, 255, 0.55)",
         "hero_bg": "linear-gradient(135deg, #0B1E5B 0%, #1D4ED8 55%, #60A5FA 100%)",
         "hero_text": "#FFFFFF",
-        "button_bg": "linear-gradient(135deg, #6D28D9, #BE185D)",
+        "button_bg": "linear-gradient(135deg, #0B1E5B 0%, #1D4ED8 60%, #3B82F6 100%)",
         "button_text": "#FFFFFF",
+        # sidebar controls (display buttons, voice dropdown)
+        "control_bg": "linear-gradient(135deg, #1E3A8A, #2563EB)",
+        "control_active_bg": "linear-gradient(135deg, #1D4ED8, #60A5FA)",
+        "control_text": "#FFFFFF",
+        "control_active_text": "#FFFFFF",
+        "control_border": "#1E40AF",
+        "control_ring": "#0B1E5B",
     },
     "🌙 Dark": {
-        "bg": "radial-gradient(circle at top left, #312E81 0%, #0F172A 50%, #020617 100%)",
-        "card": "#1E293B",
+        "bg": "radial-gradient(circle at top left, #1E3A8A 0%, #0F172A 50%, #020617 100%)",
+        "card": "#0F1E3D",
         "text": "#F8FAFC",
-        "muted": "#CBD5E1",
-        "accent": "#C4B5FD",
-        "border": "#475569",
-        "sidebar": "rgba(15, 23, 42, 0.9)",
+        "muted": "#BFDBFE",
+        "accent": "#60A5FA",
+        "border": "#1E3A8A",
+        "sidebar": "rgba(8, 15, 40, 0.9)",
         "overlay": "rgba(2, 6, 23, 0.40)",
         "hero_bg": "linear-gradient(135deg, #0A1747 0%, #1E40AF 55%, #3B82F6 100%)",
         "hero_text": "#FFFFFF",
-        "button_bg": "linear-gradient(135deg, #7C3AED, #DB2777)",
+        "button_bg": "linear-gradient(135deg, #0A1747 0%, #1D4ED8 60%, #3B82F6 100%)",
         "button_text": "#FFFFFF",
+        "control_bg": "linear-gradient(135deg, #0B1E5B, #1E40AF)",
+        "control_active_bg": "linear-gradient(135deg, #1D4ED8, #60A5FA)",
+        "control_text": "#DBEAFE",
+        "control_active_text": "#FFFFFF",
+        "control_border": "#1E3A8A",
+        "control_ring": "#93C5FD",
     },
     "⚫ High contrast": {
         "bg": "#000000",
@@ -239,6 +255,12 @@ THEMES = {
         "hero_text": "#FFFF00",
         "button_bg": "#FFFF00",
         "button_text": "#000000",
+        "control_bg": "#000000",
+        "control_active_bg": "#FFFF00",
+        "control_text": "#FFFF00",
+        "control_active_text": "#000000",
+        "control_border": "#FFFF00",
+        "control_ring": "#FFFFFF",
     },
 }
 FONT_SIZES = {"Normal": "18px", "Large": "21px", "Extra large": "25px"}
@@ -323,6 +345,39 @@ html { font-size: var(--font-size); }
     text-transform: uppercase;
 }
 
+
+/* sidebar: display buttons in blue, the chosen one is lighter with a ring */
+[data-testid="stSidebar"] [data-testid^="stBaseButton-segmented_control"] {
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--control-bg) !important;
+    border: 2px solid var(--control-border) !important;
+    padding: 0.45rem 0.3rem;
+}
+[data-testid="stSidebar"] [data-testid^="stBaseButton-segmented_control"] * {
+    color: var(--control-text) !important;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-segmented_controlActive"] {
+    background: var(--control-active-bg) !important;
+    box-shadow: 0 0 0 2px var(--control-ring);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-segmented_controlActive"] * {
+    color: var(--control-active-text) !important;
+}
+
+/* sidebar: voice dropdown in blue */
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    background: var(--control-bg) !important;
+    border: 2px solid var(--control-border) !important;
+    border-radius: 12px;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] * { color: var(--control-text) !important; }
+[data-testid="stSidebar"] [data-baseweb="select"] svg { fill: var(--control-text) !important; }
+/* the dropdown has its own outline, so no extra yellow focus line inside it */
+[data-testid="stSidebar"] [data-baseweb="select"] *:focus-visible { outline: none !important; }
+[data-testid="stSidebar"] [data-baseweb="select"]:focus-within > div { box-shadow: 0 0 0 3px #FACC15; }
 
 /* sidebar: footer */
 .side-footer {
