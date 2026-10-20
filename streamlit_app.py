@@ -150,18 +150,32 @@ with st.sidebar:
     # label_visibility="collapsed" hides the small label (the section title shows instead),
     # screen readers still read it
     sidebar_section("🎨", "Display")
-    theme_name = st.radio("Display mode", ["☀️ Light", "🌙 Dark", "⚫ High contrast"],
-                          index=1, label_visibility="collapsed")
+    # buttons side by side, one is always selected
+    theme_name = st.segmented_control(
+        "Display mode",
+        ["☀️ Light", "🌙 Dark", "⚫ High contrast"],
+        default="🌙 Dark",
+        label_visibility="collapsed",
+    )
+    if theme_name is None:  # clicking the selected button again un-selects it, so fall back to Dark
+        theme_name = "🌙 Dark"
 
     sidebar_section("🔠", "Text size")
-    text_size = st.radio("Text size", ["Normal", "Large", "Extra large"],
-                         index=1, horizontal=True, label_visibility="collapsed")
+    # a slider from small to big
+    text_size = st.select_slider(
+        "Text size",
+        options=["Normal", "Large", "Extra large"],
+        value="Large",
+        label_visibility="collapsed",
+    )
 
     sidebar_section("🔊", "Voice")
-    voice = st.radio(
+    # dropdown list with a short description of each voice
+    VOICES = {"Kore": "Firm", "Puck": "Upbeat", "Charon": "Informative", "Aoede": "Breezy"}
+    voice = st.selectbox(
         "Voice",
-        ["Kore", "Puck", "Charon", "Aoede"],
-        captions=["Firm", "Upbeat", "Informative", "Breezy"],
+        list(VOICES),
+        format_func=lambda name: f"🗣️ {name} · {VOICES[name]}",
         label_visibility="collapsed",
     )
     slow = st.toggle("🐢 Speak slowly")
@@ -309,23 +323,6 @@ html { font-size: var(--font-size); }
     text-transform: uppercase;
 }
 
-/* sidebar: radio options look like buttons, the chosen one is filled */
-[data-testid="stSidebar"] label[data-baseweb="radio"] {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 0.5rem 0.8rem;
-    margin: 0.15rem 0;
-    width: 100%;
-    transition: border-color 0.15s, transform 0.15s;
-}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:hover { border-color: var(--accent); transform: translateX(3px); }
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) {
-    background: var(--button-bg);
-    border-color: var(--accent);
-}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) * { color: var(--button-text) !important; }
-[data-testid="stSidebar"] [role="radiogroup"][aria-orientation="horizontal"] label[data-baseweb="radio"] { width: auto; }
 
 /* sidebar: footer */
 .side-footer {
