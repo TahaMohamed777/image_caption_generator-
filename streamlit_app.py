@@ -362,8 +362,9 @@ html { font-size: var(--font-size); }
 
 
 /* sidebar text is always light, because the sidebar is always navy (black in high contrast) */
-[data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span,
-[data-testid="stSidebar"] div { color: var(--side-text); }
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: var(--side-text); }
+/* except the white Gemini badge, which keeps dark text */
+[data-testid="stSidebar"] .gemini-badge { color: #1F1F1F !important; }
 
 /* sidebar: footer */
 .side-footer {
