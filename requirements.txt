@@ -4,3 +4,4 @@ streamlit>=1.40
 google-genai
 pillow
 numpy
+gTTS

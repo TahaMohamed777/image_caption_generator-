@@ -11,10 +11,12 @@ from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 from tensorflow.keras.models import Model, load_model
 from google import genai
 from google.genai import types
+from gtts import gTTS
 
 
 TEXT_MODEL = "gemini-3.8-flash"
-TTS_MODEL = "gemini-3.8-flash-tts"
+# each voice model has its own free daily limit, so if the first one runs out the second is tried
+TTS_MODELS = ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"]
 
 # this has to be the first Streamlit command
 st.set_page_config(
@@ -105,36 +107,62 @@ def improve_caption(caption):
         return caption
 
 
-def text_to_speech(text, voice, slow):
-    # the TTS model follows simple instructions about how to speak
+@st.cache_data(show_spinner=False)
+def gemini_speech(text, voice, slow):
+    # cached: the same sentence + voice is only sent to Gemini once (saves the free daily limit)
+    # if every model fails it raises the error, so failures are NOT cached
     if slow:
-        text = "Read this slowly and clearly: " + text
-    try:
-        response = client.models.generate_content(
-            model=TTS_MODEL,
-            contents=text,
-            config=types.GenerateContentConfig(
-                response_modalities=["AUDIO"],
-                speech_config=types.SpeechConfig(
-                    voice_config=types.VoiceConfig(
-                        prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice)
-                    )
+        text = "Read this slowly and clearly: " + text  # the TTS model follows simple instructions
+    last_error = None
+    for tts_model in TTS_MODELS:
+        try:
+            response = client.models.generate_content(
+                model=tts_model,
+                contents=text,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice)
+                        )
+                    ),
                 ),
-            ),
-        )
-        audio_data = response.candidates[0].content.parts[0].inline_data.data
+            )
+            audio_data = response.candidates[0].content.parts[0].inline_data.data
+        except Exception as e:
+            last_error = e
+            continue  # try the next model
+
+        # Gemini returns raw audio (16-bit, 24000 Hz, mono), so I wrap it in a wav file in memory
+        buffer = io.BytesIO()
+        with wave.open(buffer, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(24000)
+            wf.writeframes(audio_data)
+        return buffer.getvalue()
+    raise last_error
+
+
+def backup_speech(text, slow):
+    # free Google Translate voice (gTTS), used when Gemini's voice isn't available
+    buffer = io.BytesIO()
+    gTTS(text, slow=slow).write_to_fp(buffer)
+    return buffer.getvalue()
+
+
+def text_to_speech(text, voice, slow):
+    # returns (audio, format), or (None, None) if no voice worked
+    try:
+        return gemini_speech(text, voice, slow), "audio/wav"
+    except Exception as e:
+        reason = "the free daily limit is used up" if "429" in str(e) else "it returned an error"
+        st.info(f"Gemini's voice isn't available right now ({reason}), so a backup voice is used.")
+    try:
+        return backup_speech(text, slow), "audio/mp3"
     except Exception as e:
         st.warning(f"Text to speech failed: {e}")
-        return None
-
-    # Gemini returns raw audio (16-bit, 24000 Hz, mono), so I wrap it in a wav file in memory
-    buffer = io.BytesIO()
-    with wave.open(buffer, "wb") as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(24000)
-        wf.writeframes(audio_data)
-    return buffer.getvalue()
+        return None, None
 
 
 # ---------- settings (sidebar) ----------
@@ -575,19 +603,21 @@ else:
             with st.spinner("Gemini is writing the sentence..."):
                 st.session_state.sentence = improve_caption(st.session_state.caption)
 
-        # "Read it aloud" always makes new audio (so a new voice setting is used),
-        # hands-free only makes it once per photo
+        # "Read it aloud" makes the audio again (so a new voice setting is used, already-made audio
+        # comes from the cache), hands-free only makes it once per photo
         if read_clicked or (hands_free and st.session_state.audio is None):
             with st.spinner("Creating the voice..."):
+                audio, audio_format = text_to_speech(st.session_state.sentence, voice, slow)
                 # False (not None) on failure, so hands-free doesn't keep retrying
-                st.session_state.audio = text_to_speech(st.session_state.sentence, voice, slow) or False
+                st.session_state.audio = audio or False
+                st.session_state.audio_format = audio_format
 
         if st.session_state.caption:
             card("🧠", "Caption from my model", st.session_state.caption)
             card(GEMINI_LOGO, "Description by Gemini", st.session_state.sentence)
 
         if st.session_state.audio:
-            st.audio(st.session_state.audio, format="audio/wav", autoplay=True)
+            st.audio(st.session_state.audio, format=st.session_state.audio_format, autoplay=True)
 
 st.markdown("---")
 st.caption("NTI project · CNN (VGG16) + LSTM image captioning · voice by Google Gemini")
