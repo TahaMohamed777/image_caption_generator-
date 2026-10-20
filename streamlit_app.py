@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 import streamlit as st
 from PIL import Image
-from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
-from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
+from tensorflow.keras.models import Model, load_model
 from google import genai
 from google.genai import types
 
@@ -19,8 +19,9 @@ VOICE = "Kore"
 
 @st.cache_resource
 def load_models():
-    # same CNN as in the notebook, without the classification layer
-    cnn = InceptionV3(include_top=False, pooling='avg')
+    # same CNN as in the notebook: VGG16 without the last layer -> 4096 features
+    vgg = VGG16()
+    cnn = Model(inputs=vgg.inputs, outputs=vgg.layers[-2].output)
     # my trained caption model
     model = load_model('best_model.keras')
     # word dictionary and max caption length saved from the notebook
@@ -43,9 +44,9 @@ client = get_gemini_client()
 # ---------- my model ----------
 
 def extract_features(image):
-    # same preprocessing as the notebook: 299x299, then InceptionV3 -> 2048 features
+    # same preprocessing as the notebook: 224x224, then VGG16 -> 4096 features
     # (load_img in the notebook resizes with "nearest", so I use the same here)
-    image = image.convert('RGB').resize((299, 299), Image.NEAREST)
+    image = image.convert('RGB').resize((224, 224), Image.NEAREST)
     image = np.array(image, dtype='float32')
     image = np.expand_dims(image, axis=0)
     image = preprocess_input(image)
@@ -127,7 +128,7 @@ def text_to_speech(text):
 
 st.title("Image Caption Generator")
 st.write(
-    "A CNN (InceptionV3) + LSTM model trained on Flickr8k describes the photo, "
+    "A CNN (VGG16) + LSTM model trained on Flickr8k describes the photo, "
     "then Gemini reads the description out loud for blind and visually impaired users."
 )
 

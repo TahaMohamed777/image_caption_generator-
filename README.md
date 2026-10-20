@@ -3,7 +3,7 @@
 Upload a photo and the app describes it out loud, to help blind and visually impaired people understand photos.
 
 ## How it works
-1. **CNN (InceptionV3)** turns the photo into 2048 image features
+1. **CNN (VGG16)** turns the photo into 4096 image features
 2. **LSTM** model trained on Flickr8k generates a caption word by word
 3. **Gemini** rewrites the caption as a natural sentence and reads it aloud
 
