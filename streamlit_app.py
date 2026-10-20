@@ -229,10 +229,26 @@ BACKGROUND_IMAGE = "static/background.jpg"
 if show_bg_image and theme_name != "⚫ High contrast" and os.path.exists(BACKGROUND_IMAGE):
     st.markdown("""
 <style>
-.stApp {
+/* the page itself is see-through, the image is drawn on a layer behind everything */
+.stApp { background: transparent !important; isolation: isolate; }
+
+.stApp::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    /* color layer + image; 100% 100% stretches the image so the WHOLE picture fills the screen */
     background: linear-gradient(var(--overlay), var(--overlay)),
-                url("app/static/background.jpg") center / cover fixed !important;
+                url("app/static/background.jpg") center / 100% 100% no-repeat;
+    /* blur layer on top of the image */
+    filter: blur(6px);
+    /* a little zoom so the blurred edges don't show a white border */
+    transform: scale(1.05);
 }
+
+/* frosted glass sidebar */
+[data-testid="stSidebar"] { backdrop-filter: blur(12px); }
 </style>
 """, unsafe_allow_html=True)
 
