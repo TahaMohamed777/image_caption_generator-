@@ -177,8 +177,8 @@ THEMES = {
         "accent": "#6D28D9",
         "border": "#C4B5FD",
         "sidebar": "rgba(255, 255, 255, 0.85)",
-        "overlay": "rgba(255, 255, 255, 0.70)",
-        "hero_bg": "linear-gradient(135deg, #7C3AED 0%, #DB2777 55%, #EA580C 100%)",
+        "overlay": "rgba(255, 255, 255, 0.55)",
+        "hero_bg": "linear-gradient(135deg, #0B1E5B 0%, #1D4ED8 55%, #60A5FA 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #6D28D9, #BE185D)",
         "button_text": "#FFFFFF",
@@ -191,8 +191,8 @@ THEMES = {
         "accent": "#C4B5FD",
         "border": "#475569",
         "sidebar": "rgba(15, 23, 42, 0.9)",
-        "overlay": "rgba(2, 6, 23, 0.60)",
-        "hero_bg": "linear-gradient(135deg, #6D28D9 0%, #BE185D 55%, #C2410C 100%)",
+        "overlay": "rgba(2, 6, 23, 0.40)",
+        "hero_bg": "linear-gradient(135deg, #0A1747 0%, #1E40AF 55%, #3B82F6 100%)",
         "hero_text": "#FFFFFF",
         "button_bg": "linear-gradient(135deg, #7C3AED, #DB2777)",
         "button_text": "#FFFFFF",
@@ -242,9 +242,9 @@ if show_bg_image and theme_name != "⚫ High contrast" and os.path.exists(BACKGR
     background: linear-gradient(var(--overlay), var(--overlay)),
                 url("app/static/background.jpg") center / 100% 100% no-repeat;
     /* blur layer on top of the image */
-    filter: blur(6px);
+    filter: blur(2px);
     /* a little zoom so the blurred edges don't show a white border */
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 /* frosted glass sidebar */
