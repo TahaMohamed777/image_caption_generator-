@@ -14,7 +14,8 @@ from google.genai import types
 from gtts import gTTS
 
 
-TEXT_MODEL = "gemini-3.8-flash"
+# if the first model is busy (503) or out of quota (429), the second one is tried
+TEXT_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash"]
 # each voice model has its own free daily limit, so if the first one runs out the second is tried
 TTS_MODELS = ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"]
 
@@ -93,18 +94,21 @@ def improve_caption(caption):
         "details that are not in the caption. Return only the sentence.\n\n"
         f"Caption: {caption}"
     )
-    try:
-        response = client.models.generate_content(
-            model=TEXT_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                thinking_config=types.ThinkingConfig(thinking_level="low")
-            ),
-        )
-        return response.text.strip()
-    except Exception as e:
-        st.warning(f"Gemini couldn't rewrite the caption: {e}")
-        return caption
+    for text_model in TEXT_MODELS:
+        try:
+            response = client.models.generate_content(
+                model=text_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    thinking_config=types.ThinkingConfig(thinking_level="low")
+                ),
+            )
+            return response.text.strip()
+        except Exception as e:
+            # no error on the page, the details only go to the app logs (Manage app)
+            print(f"{text_model} couldn't rewrite the caption: {e}")
+    # Gemini is busy or out of quota: just use my model's caption
+    return None
 
 
 @st.cache_data(show_spinner=False)
@@ -153,15 +157,15 @@ def backup_speech(text, slow):
 
 def text_to_speech(text, voice, slow):
     # returns (audio, format), or (None, None) if no voice worked
+    # errors only go to the app logs (Manage app), not on the page
     try:
         return gemini_speech(text, voice, slow), "audio/wav"
     except Exception as e:
-        reason = "the free daily limit is used up" if "429" in str(e) else "it returned an error"
-        st.info(f"Gemini's voice isn't available right now ({reason}), so a backup voice is used.")
+        print(f"Gemini voice failed, using the backup voice: {e}")
     try:
         return backup_speech(text, slow), "audio/mp3"
     except Exception as e:
-        st.warning(f"Text to speech failed: {e}")
+        print(f"Backup voice failed: {e}")
         return None, None
 
 
@@ -576,24 +580,31 @@ else:
         if (describe_clicked or read_clicked or hands_free) and st.session_state.caption is None:
             with st.spinner("Looking at the photo..."):
                 st.session_state.caption = predict_caption(extract_features(image))
-            with st.spinner("Gemini is writing the sentence..."):
+            with st.spinner("Writing the description..."):
+                # None if Gemini is busy, then my model's caption is used on its own
                 st.session_state.sentence = improve_caption(st.session_state.caption)
+
+        # the text that is read aloud: Gemini's sentence, or my model's caption if Gemini was busy
+        spoken_text = st.session_state.sentence or st.session_state.caption
 
         # "Read it aloud" makes the audio again (so a new voice setting is used, already-made audio
         # comes from the cache), hands-free only makes it once per photo
         if read_clicked or (hands_free and st.session_state.audio is None):
             with st.spinner("Creating the voice..."):
-                audio, audio_format = text_to_speech(st.session_state.sentence, voice, slow)
+                audio, audio_format = text_to_speech(spoken_text, voice, slow)
                 # False (not None) on failure, so hands-free doesn't keep retrying
                 st.session_state.audio = audio or False
                 st.session_state.audio_format = audio_format
 
         if st.session_state.caption:
             card("🧠", "Caption from my model", st.session_state.caption)
-            card(GEMINI_LOGO, "Description by Gemini", st.session_state.sentence)
+            if st.session_state.sentence:
+                card(GEMINI_LOGO, "Description by Gemini", st.session_state.sentence)
 
         if st.session_state.audio:
             st.audio(st.session_state.audio, format=st.session_state.audio_format, autoplay=True)
+        elif st.session_state.audio is False:
+            card("🔇", "Voice", "The voice isn't available right now. Please try again in a moment.")
 
 st.markdown("---")
 st.caption("NTI project · CNN (VGG16) + LSTM image captioning · voice by Google Gemini")
