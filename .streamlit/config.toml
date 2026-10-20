@@ -1,7 +1,6 @@
 [theme]
-base = "dark"
-primaryColor = "#EC4899"
-backgroundColor = "#0F172A"
-secondaryBackgroundColor = "#1E293B"
-textColor = "#F1F5F9"
+# the app switches between light / dark / high contrast itself (see the Settings sidebar),
+# this is only the base for Streamlit's own widgets
+base = "light"
+primaryColor = "#7C3AED"
 font = "sans serif"
