@@ -139,31 +139,46 @@ def text_to_speech(text, voice, slow):
 
 # ---------- settings (sidebar) ----------
 
-with st.sidebar:
-    st.header("⚙️ Settings")
-    theme_name = st.radio("Display mode", ["☀️ Light", "🌙 Dark", "⚫ High contrast"], index=1)
-    text_size = st.radio("Text size", ["Normal", "Large", "Extra large"], index=1)
+def sidebar_section(icon, title):
+    st.markdown(f'<div class="side-section">{icon} {title}</div>', unsafe_allow_html=True)
 
-    st.divider()
-    st.header("🔊 Voice")
+
+with st.sidebar:
+    # filled in further down, after the logos are defined
+    brand_slot = st.empty()
+
+    # label_visibility="collapsed" hides the small label (the section title shows instead),
+    # screen readers still read it
+    sidebar_section("🎨", "Display")
+    theme_name = st.radio("Display mode", ["☀️ Light", "🌙 Dark", "⚫ High contrast"],
+                          index=1, label_visibility="collapsed")
+
+    sidebar_section("🔠", "Text size")
+    text_size = st.radio("Text size", ["Normal", "Large", "Extra large"],
+                         index=1, horizontal=True, label_visibility="collapsed")
+
+    sidebar_section("🔊", "Voice")
     voice = st.radio(
         "Voice",
         ["Kore", "Puck", "Charon", "Aoede"],
         captions=["Firm", "Upbeat", "Informative", "Breezy"],
+        label_visibility="collapsed",
     )
-    slow = st.toggle("Speak slowly")
+    slow = st.toggle("🐢 Speak slowly")
     hands_free = st.toggle(
-        "Hands-free mode",
+        "🙌 Hands-free mode",
         help="Describes the photo and reads it aloud as soon as a photo is added, no buttons needed.",
     )
 
-    st.divider()
+    sidebar_section("🖼️", "Background")
     show_bg_image = st.toggle(
         "Background image",
         value=True,
         help="Turn this off if the background makes the text hard to read. "
              "It is always off in High contrast mode.",
     )
+
+    footer_slot = st.empty()
 
 
 # ---------- colors for each display mode ----------
@@ -257,7 +272,72 @@ st.markdown("""
 html { font-size: var(--font-size); }
 .stApp { background: var(--bg); color: var(--text); }
 [data-testid="stHeader"] { background: transparent; }
-[data-testid="stSidebar"] { background: var(--sidebar); border-right: 3px solid var(--border); }
+[data-testid="stSidebar"] {
+    background: var(--sidebar);
+    border-right: 3px solid var(--border);
+    backdrop-filter: blur(12px);
+    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.25);
+}
+
+/* sidebar: app name card at the top */
+.side-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: var(--hero-bg);
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.6rem;
+}
+.side-brand .app-logo { width: 2.8rem; height: 2.8rem; }
+.side-brand .name { color: var(--hero-text); font-weight: 800; font-size: 1.1rem; line-height: 1.2; }
+.side-brand .sub { color: var(--hero-text); opacity: 0.85; font-size: 0.8rem; }
+
+/* sidebar: section titles */
+.side-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.3rem 0 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* sidebar: radio options look like buttons, the chosen one is filled */
+[data-testid="stSidebar"] label[data-baseweb="radio"] {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 0.5rem 0.8rem;
+    margin: 0.15rem 0;
+    width: 100%;
+    transition: border-color 0.15s, transform 0.15s;
+}
+[data-testid="stSidebar"] label[data-baseweb="radio"]:hover { border-color: var(--accent); transform: translateX(3px); }
+[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) {
+    background: var(--button-bg);
+    border-color: var(--accent);
+}
+[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) * { color: var(--button-text) !important; }
+[data-testid="stSidebar"] [role="radiogroup"][aria-orientation="horizontal"] label[data-baseweb="radio"] { width: auto; }
+
+/* sidebar: footer */
+.side-footer {
+    margin-top: 1.8rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+.side-footer .gemini-badge { margin-bottom: 0.6rem; }
+
 .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p, .stApp label, .stApp li { color: var(--text); }
 [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--muted) !important; }
 
@@ -344,8 +424,8 @@ html { font-size: var(--font-size); }
 APP_LOGO = (
     '<svg class="app-logo" viewBox="0 0 64 64" aria-hidden="true">'
     '<circle cx="32" cy="32" r="31" fill="#FFFFFF"/>'
-    '<path d="M10 32 C20 16 44 16 54 32 C44 48 20 48 10 32Z" fill="none" stroke="#6D28D9" stroke-width="4.5"/>'
-    '<circle cx="32" cy="32" r="8.5" fill="#DB2777"/>'
+    '<path d="M10 32 C20 16 44 16 54 32 C44 48 20 48 10 32Z" fill="none" stroke="#1D4ED8" stroke-width="4.5"/>'
+    '<circle cx="32" cy="32" r="8.5" fill="#0EA5E9"/>'
     '</svg>'
 )
 
@@ -369,6 +449,21 @@ def card(icon, label, text):
         f'<div class="text">{html.escape(text)}</div></div>',
         unsafe_allow_html=True,
     )
+
+
+# fill the top and bottom of the sidebar now that the logos exist
+brand_slot.markdown(
+    f'<div class="side-brand">{APP_LOGO}<div>'
+    '<div class="name">Image Caption<br>Generator</div>'
+    '<div class="sub">⚙️ Settings</div>'
+    '</div></div>',
+    unsafe_allow_html=True,
+)
+footer_slot.markdown(
+    f'<div class="side-footer"><div class="gemini-badge">{GEMINI_LOGO} Powered by Gemini</div>'
+    '<div>CNN + LSTM · NTI project</div></div>',
+    unsafe_allow_html=True,
+)
 
 
 # ---------- the page ----------
